@@ -8,7 +8,7 @@
     "build": "webpack --mode production"
   },
   "author": "Miguel Rodríguez Bonhome <contacto@mrbonhome.com> (http://mrbonhome.com)",
-  "license": "ISC",
+  "license": "MIT",
   "bin": {
     "infinizhen": "./bin/start.js"
   },
