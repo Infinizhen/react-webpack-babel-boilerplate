@@ -16,7 +16,6 @@ const getDeps = (deps) =>
     .map((dep) => `${dep[0]}@${dep[1]}`)
     .toString()
     .replace(/,/g, " ")
-    .replace(/^/g, "")
     // exclude the dependency only used in this file, nor relevant to the boilerplate
     .replace(/fs-extra[^\s]+/g, "");
 
