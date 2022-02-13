@@ -9,7 +9,7 @@ const packageJson = require("../package.json");
 const scripts = `"start": "webpack-dev-server --mode=development --open --hot",
 "build": "webpack --mode=production"`;
 
-const babel = `"babel": ${JSON.stringify(packageJson.babel)}`;
+//const babel = `"babel": ${JSON.stringify(packageJson.babel)}`;
 
 const getDeps = (deps) =>
   Object.entries(deps)
@@ -20,7 +20,9 @@ const getDeps = (deps) =>
     // exclude the dependency only used in this file, nor relevant to the boilerplate
     .replace(/fs-extra[^\s]+/g, "");
 
-console.log("Initializing project, please wait a sec...");
+console.log(
+  `Initializing project ${packageJson.version}, please wait a sec...`
+);
 
 // create folder and initialize npm
 exec(
@@ -40,7 +42,7 @@ exec(
           '"test": "echo \\"Error: no test specified\\" && exit 1"',
           scripts
         )
-        .replace('"keywords": []', babel);
+        .replace('"keywords": [],\n', "");
       fs.writeFile(packageJSON, data, (err2) => err2 || true);
     });
 

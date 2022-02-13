@@ -1,6 +1,6 @@
 {
   "name": "@infinizhen/react-webpack-babel-boilerplate",
-  "version": "1.1702.568.717.1",
+  "version": "1.1702.568.717.5",
   "description": "A really simple and minimalistic React 17, Webpack 5 and Babel 7 boilerplate project.",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,9 @@
   },
   "author": "Miguel Rodríguez Bonhome <contacto@mrbonhome.com> (http://mrbonhome.com)",
   "license": "ISC",
-  "bin": "./bin/start.js",
+  "bin": {
+    "infinizhen": "./bin/start.js"
+  },
   "dependencies": {
     "fs-extra": "^10.0.0",
     "react": "^17.0.2",
