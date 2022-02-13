@@ -9,7 +9,9 @@
   },
   "author": "Miguel Rodríguez Bonhome <contacto@mrbonhome.com> (http://mrbonhome.com)",
   "license": "ISC",
+  "bin": "./bin/start.js",
   "dependencies": {
+    "fs-extra": "^10.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
