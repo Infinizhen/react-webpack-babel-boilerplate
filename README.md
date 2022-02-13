@@ -13,6 +13,26 @@ The goal is to save me (and maybe you) like 10 or 15 minutes setting up the thin
 
 So that's why is this simple. This is **my** bare minimum to start working on even the most trivial of projects.
 
+# Usage
+
+## Install with npm and execute with npx!
+
+Install globally with npm:
+
+`npm i @infinizhen/react-webpack-babel-boilerplate -g`
+
+Then you can run the package a là CRA:
+
+`npx infinizhen your-app`
+
+or
+
+`npx react-webpack-babel-boilerplate my-app`
+
+## Clone the repo!
+
+`git clone https://github.com/Infinizhen/react-webpack-babel-boilerplate.git`
+
 # Project Structure
 
 The project structure is just suited to my most common needs.
