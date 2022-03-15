@@ -1,6 +1,6 @@
 # REACT17-WEBPACK5-BABEL7 BOILERPLATE
 
-This is a really simple and minimalistic React 17, Webpack 5.68 and Babel 7.17 boilerplate project.
+This is a really simple and minimalistic React 17, Webpack 5 and Babel 7 boilerplate project.
 
 By simple and minimalistic i mean **simple and minimalistic**.
 It is just that. A simple project, with the most common dependencies (both prod and dev) for a minimal React project setup.
