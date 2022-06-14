@@ -1,7 +1,7 @@
 {
   "name": "@infinizhen/react-webpack-babel-boilerplate",
-  "version": "1.1702.5700.7177.1",
-  "description": "A really simple and minimalistic React 17, Webpack 5 and Babel 7 boilerplate project.",
+  "version": "1.1800.5700.7177.1",
+  "description": "A really simple and minimalistic React 18, Webpack 5 and Babel 7 boilerplate project.",
   "main": "index.js",
   "scripts": {
     "serve": "webpack serve --mode development",
