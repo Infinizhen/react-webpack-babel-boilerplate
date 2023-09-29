@@ -2,105 +2,98 @@
 const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
-const { exec } = require("child_process");
+const { exec } = require("util").promisify;
 
 const packageJson = require("../package.json");
 
 const scripts = `"start": "webpack-dev-server --mode=development --open --hot",
 "build": "webpack --mode=production"`;
 
-//const babel = `"babel": ${JSON.stringify(packageJson.babel)}`;
-
-const getDeps = (deps) =>
-  Object.entries(deps)
-    .map((dep) => `${dep[0]}@${dep[1]}`)
-    .toString()
-    .replace(/,/g, " ")
-    // exclude the dependency only used in this file, nor relevant to the boilerplate
-    .replace(/fs-extra[^\s]+/g, "");
-
-console.log(
-  `Initializing project ${packageJson.version}, please wait a sec...`
-);
-
-// create folder and initialize npm
-exec(
-  `mkdir ${process.argv[2]} && cd ${process.argv[2]} && npm init -f`,
-  (initErr, initStdout, initStderr) => {
-    if (initErr) {
-      console.error(`There has been an error: ${initErr}`);
-      return;
-    }
-    const packageJSON = `${process.argv[2]}/package.json`;
-    // replace the default scripts
-    fs.readFile(packageJSON, (err, file) => {
-      if (err) throw err;
-      const data = file
-        .toString()
-        .replace(
-          '"test": "echo \\"Error: no test specified\\" && exit 1"',
-          scripts
-        )
-        .replace('"keywords": [],\n', "");
-      fs.writeFile(packageJSON, data, (err2) => err2 || true);
-    });
-
-    const filesToCopy = ["webpack.config.js", ".babelrc", ".browserslistrc"];
-
-    for (let i = 0; i < filesToCopy.length; i += 1) {
-      fs.createReadStream(path.join(__dirname, `../${filesToCopy[i]}`)).pipe(
-        fs.createWriteStream(`${process.argv[2]}/${filesToCopy[i]}`)
-      );
+async function initializeProject() {
+  try {
+    const projectName = process.argv[2];
+    if (!projectName) {
+      console.error("Error: No project name provided.");
+      process.exit(1);
     }
 
-    // npm will remove the .gitignore file when the package is installed, therefore it cannot be copied, locally and needs to be downloaded. Use your raw .gitignore once you pushed your code to GitHub.
-    https.get(
-      "https://raw.githubusercontent.com/infinizhen/react-webpack-babel-boilerplate/main/.gitignore",
-      (res) => {
-        res.setEncoding("utf8");
-        let body = "";
-        res.on("data", (data) => {
-          body += data;
-        });
-        res.on("end", () => {
-          fs.writeFile(
-            `${process.argv[2]}/.gitignore`,
-            body,
-            { encoding: "utf-8" },
-            (err) => {
-              if (err) throw err;
-            }
-          );
-        });
-      }
+    console.log(
+      `Initializing project ${packageJson.version}, please wait a sec...`
     );
+
+    // Create folder and initialize npm
+    await exec(`mkdir ${projectName} && cd ${projectName} && npm init -f`);
+
+    const packageJSONPath = `${projectName}/package.json`;
+
+    // Read and update package.json scripts
+    const data = await fs.readFile(packageJSONPath, "utf8");
+    const updatedData = data
+      .replace(
+        '"test": "echo \\"Error: no test specified\\" && exit 1"',
+        scripts
+      )
+      .replace('"keywords": [],\n', "");
+    await fs.writeFile(packageJSONPath, updatedData);
 
     console.log("npm init -- done\n");
 
-    // installing dependencies
+    // Copy configuration files
+    const filesToCopy = ["webpack.config.js", ".babelrc", ".browserslistrc"];
+    const copyPromises = filesToCopy.map((file) =>
+      fs.copy(path.join(__dirname, `../${file}`), `${projectName}/${file}`)
+    );
+    await Promise.all(copyPromises);
+
+    // Download and copy .gitignore
+    const gitIgnore = await downloadFile(
+      "https://raw.githubusercontent.com/infinizhen/react-webpack-babel-boilerplate/main/.gitignore"
+    );
+    await fs.writeFile(`${projectName}/.gitignore`, gitIgnore, {
+      encoding: "utf-8",
+    });
+
     console.log("Installing deps...");
+
+    // Install dependencies
     const devDeps = getDeps(packageJson.devDependencies);
     const deps = getDeps(packageJson.dependencies);
-    exec(
-      `cd ${process.argv[2]} && git init && node -v && npm -v && npm i -D ${devDeps} && npm i -S ${deps}`,
-      (npmErr, npmStdout, npmStderr) => {
-        if (npmErr) {
-          console.error(`An error has occured: ${npmErr}`);
-          return;
-        }
-        console.log(npmStdout);
-        console.log("Deps installed");
-
-        console.log("Copying additional files..");
-        // copy additional source files
-        fs.copy(path.join(__dirname, "../src"), `${process.argv[2]}/src`)
-          .then(() =>
-            console.log(
-              `All done!\n\nYour project is now ready\n\nUse the below command to run the app.\n\ncd ${process.argv[2]}\nnpm start`
-            )
-          )
-          .catch((err) => console.error(err));
-      }
+    await exec(
+      `cd ${projectName} && git init && node -v && npm -v && npm i -D ${devDeps} && npm i -S ${deps}`
     );
+
+    console.log("Deps installed");
+
+    console.log("Copying additional files...");
+
+    // Copy source files
+    await fs.copy(path.join(__dirname, "../src"), `${projectName}/src`);
+
+    console.log(
+      `All done!\n\nYour project is now ready\n\nUse the below command to run the app.\n\ncd ${projectName}\nnpm start`
+    );
+  } catch (error) {
+    console.error(`An error has occurred: ${error}`);
   }
-);
+}
+
+function getDeps(deps) {
+  return Object.entries(deps)
+    .map((dep) => `${dep[0]}@${dep[1]}`)
+    .join(" ");
+}
+
+function downloadFile(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        res.setEncoding("utf8");
+        let body = "";
+        res.on("data", (data) => (body += data));
+        res.on("end", () => resolve(body));
+      })
+      .on("error", reject);
+  });
+}
+
+initializeProject();
