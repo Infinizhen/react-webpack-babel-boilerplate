@@ -39,7 +39,7 @@
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
-  "private": true,
+  "private": false,
   "keywords": [
     "react",
     "webpack",
