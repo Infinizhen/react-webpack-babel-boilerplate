@@ -2,7 +2,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
-const { exec } = require("util").promisify;
+const { exec } = require("child_process"); // Corregido aquí
 
 const packageJson = require("../package.json");
 
@@ -87,7 +87,7 @@ function downloadFile(url) {
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
-        res.setEncoding("utf8");
+        res.setEncoding("utf-8");
         let body = "";
         res.on("data", (data) => (body += data));
         res.on("end", () => resolve(body));
