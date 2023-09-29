@@ -2,7 +2,8 @@
 const fs = require("fs-extra");
 const path = require("path");
 const https = require("https");
-const { exec } = require("child_process"); // Corregido aquí
+const util = require("util");
+const exec = util.promisify(require("child_process").exec);
 
 const packageJson = require("../package.json");
 
@@ -21,10 +22,14 @@ async function initializeProject() {
       `Initializing project ${packageJson.version}, please wait a sec...`
     );
 
-    // Create folder and initialize npm
-    await exec(`mkdir ${projectName} && cd ${projectName} && npm init -f`);
+    // Create project folder
+    await fs.ensureDir(projectName);
 
-    const packageJSONPath = `${projectName}/package.json`;
+    // Change to project directory and initialize npm
+    process.chdir(projectName);
+    await exec(`npm init -f`);
+
+    const packageJSONPath = `package.json`;
 
     // Read and update package.json scripts
     const data = await fs.readFile(packageJSONPath, "utf8");
@@ -40,18 +45,15 @@ async function initializeProject() {
 
     // Copy configuration files
     const filesToCopy = ["webpack.config.js", ".babelrc", ".browserslistrc"];
-    const copyPromises = filesToCopy.map((file) =>
-      fs.copy(path.join(__dirname, `../${file}`), `${projectName}/${file}`)
-    );
-    await Promise.all(copyPromises);
+    for (const file of filesToCopy) {
+      await fs.copy(path.join(__dirname, `../${file}`), file);
+    }
 
     // Download and copy .gitignore
     const gitIgnore = await downloadFile(
       "https://raw.githubusercontent.com/infinizhen/react-webpack-babel-boilerplate/main/.gitignore"
     );
-    await fs.writeFile(`${projectName}/.gitignore`, gitIgnore, {
-      encoding: "utf-8",
-    });
+    await fs.writeFile(`.gitignore`, gitIgnore, { encoding: "utf-8" });
 
     console.log("Installing deps...");
 
@@ -59,7 +61,7 @@ async function initializeProject() {
     const devDeps = getDeps(packageJson.devDependencies);
     const deps = getDeps(packageJson.dependencies);
     await exec(
-      `cd ${projectName} && git init && node -v && npm -v && npm i -D ${devDeps} && npm i -S ${deps}`
+      `git init && node -v && npm -v && npm i -D ${devDeps} && npm i -S ${deps}`
     );
 
     console.log("Deps installed");
@@ -67,7 +69,7 @@ async function initializeProject() {
     console.log("Copying additional files...");
 
     // Copy source files
-    await fs.copy(path.join(__dirname, "../src"), `${projectName}/src`);
+    await fs.copy(path.join(__dirname, "../src"), `src`);
 
     console.log(
       `All done!\n\nYour project is now ready\n\nUse the below command to run the app.\n\ncd ${projectName}\nnpm start`
@@ -87,7 +89,7 @@ function downloadFile(url) {
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
-        res.setEncoding("utf-8");
+        res.setEncoding("utf8");
         let body = "";
         res.on("data", (data) => (body += data));
         res.on("end", () => resolve(body));
