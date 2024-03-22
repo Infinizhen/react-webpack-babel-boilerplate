@@ -1,27 +1,9 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  // Entry point of your application
-  entry: "./src/index.js",
-
-  // Output configuration for the bundle files
-  output: {
-    path: path.join(__dirname, "/public"),
-    filename: "bundle.js",
-    clean: true, // Cleans the output directory before each build
-  },
-
-  // Development server configuration
-  devServer: {
-    port: 3000,
-    contentBase: path.join(__dirname, "public"), // Serves static files from 'public' directory
-    compress: true, // Enables gzip compression
-    hot: true, // Enables Hot Module Replacement
-    open: true, // Opens the browser after server has been started
-  },
-
   // Module rules for processing different file types
   module: {
     rules: [
@@ -31,8 +13,16 @@ module.exports = {
         use: "babel-loader",
       },
       {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader"], // Use MiniCssExtractPlugin loader instead of 'style-loader' for production
+        test: /.s?css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: ["file-loader"],
+      },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        use: ["file-loader"],
       },
     ],
   },
@@ -41,25 +31,19 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({ template: "./src/index.html" }),
     new MiniCssExtractPlugin({
-      filename: "[name].[contenthash].css", // Use contenthash for cache busting
+      filename: "bundle.css", // Use contenthash for cache busting
     }),
   ],
 
   // Optimization and performance enhancements
   optimization: {
+    minimizer: [new TerserPlugin(), new CssMinimizerPlugin()],
     splitChunks: {
       chunks: "all",
     },
   },
 
-  // Resolving module import statements
-  resolve: {
-    extensions: [".js", ".jsx"],
-    alias: {
-      "@": path.resolve(__dirname, "src"), // Shortcut to reference src directory
-    },
+  output: {
+    filename: "[name].[contenthash].js",
   },
-
-  // Source Map for easier debugging
-  devtool: "source-map",
 };
