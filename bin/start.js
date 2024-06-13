@@ -8,7 +8,9 @@ const exec = util.promisify(require("child_process").exec);
 const packageJson = require("../package.json");
 
 const scripts = `"start": "webpack-dev-server --mode=development --open --hot",
-"build": "webpack --mode=production"`;
+    "watch:sass": "node-sass src/style.scss -w",
+    "go": "npm-run-all start watch:sass",
+    "build": "webpack --mode production"`;
 
 async function initializeProject() {
   try {
@@ -72,7 +74,7 @@ async function initializeProject() {
     await fs.copy(path.join(__dirname, "../src"), `src`);
 
     console.log(
-      `All done!\n\nYour project is now ready\n\nUse the below command to run the app.\n\ncd ${projectName}\nnpm start`
+      `All done!\n\nYour project is now ready\n\nUse the below command to run the app.\n\ncd ${projectName}\nnpm run go\n\nHappy coding!`
     );
   } catch (error) {
     console.error(`An error has occurred: ${error}`);
